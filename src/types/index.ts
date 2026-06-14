@@ -61,6 +61,8 @@ export interface WorkflowNode {
   data: {
     label: string;
     toolId?: string;
+    promptId?: string;
+    promptTitle?: string;
   };
 }
 
@@ -78,6 +80,34 @@ export interface Workflow {
   edges: WorkflowEdge[];
   isFavorite: boolean;
   useCount: number;
+}
+
+export interface WorkflowExecutionStep {
+  stepIndex: number;
+  toolId: string;
+  toolName: string;
+  promptId?: string;
+  promptTitle?: string;
+  input: string;
+  output: string;
+  status: 'pending' | 'running' | 'completed' | 'error';
+  startTime?: number;
+  endTime?: number;
+  duration?: number;
+}
+
+export interface WorkflowExecutionRecord {
+  id: string;
+  workflowId: string;
+  workflowName: string;
+  initialInput: string;
+  steps: WorkflowExecutionStep[];
+  finalOutput: string;
+  status: 'pending' | 'running' | 'completed' | 'error';
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  totalDuration?: number;
 }
 
 export interface TeamMember {
