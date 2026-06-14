@@ -63,6 +63,16 @@ export interface WorkflowNode {
     toolId?: string;
     promptId?: string;
     promptTitle?: string;
+    dependsOn?: string[];
+    branchGroup?: string;
+    nodeType?: 'tool' | 'condition' | 'start' | 'end';
+    condition?: {
+      expression: string;
+      operator: 'contains' | 'equals' | 'startsWith' | 'lengthGt';
+      value: string;
+      trueTarget?: string;
+      falseTarget?: string;
+    };
   };
 }
 
@@ -80,20 +90,36 @@ export interface Workflow {
   edges: WorkflowEdge[];
   isFavorite: boolean;
   useCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface WorkflowExecutionStep {
   stepIndex: number;
+  nodeId: string;
   toolId: string;
   toolName: string;
   promptId?: string;
   promptTitle?: string;
   input: string;
   output: string;
-  status: 'pending' | 'running' | 'completed' | 'error';
+  status: 'pending' | 'running' | 'completed' | 'error' | 'skipped' | 'paused';
   startTime?: number;
   endTime?: number;
   duration?: number;
+  skippedReason?: string;
+  variableValues?: Record<string, string>;
+}
+
+export interface StepVariableFormItem {
+  name: string;
+  label: string;
+  type: 'text' | 'select' | 'number' | 'textarea';
+  required?: boolean;
+  placeholder?: string;
+  options?: { label: string; value: string }[];
+  nodeId: string;
+  stepIndex: number;
 }
 
 export interface WorkflowExecutionRecord {
@@ -103,11 +129,17 @@ export interface WorkflowExecutionRecord {
   initialInput: string;
   steps: WorkflowExecutionStep[];
   finalOutput: string;
-  status: 'pending' | 'running' | 'completed' | 'error';
+  status: 'pending' | 'running' | 'completed' | 'error' | 'paused';
   createdAt: string;
   startedAt?: string;
   completedAt?: string;
+  pausedAt?: string;
+  resumedAt?: string;
   totalDuration?: number;
+  variableValues?: Record<string, string>;
+  stepVariableValues?: Record<string, Record<string, string>>;
+  isOrphan?: boolean;
+  savedToTasks?: string[];
 }
 
 export interface TeamMember {

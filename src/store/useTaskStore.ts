@@ -15,7 +15,7 @@ interface TaskState {
   toggleFavorite: (id: string) => void;
   setRating: (id: string, rating: number) => void;
   setComment: (id: string, comment: string) => void;
-  addRecord: (record: Omit<TaskRecord, 'id' | 'createdAt'>) => void;
+  addRecord: (record: Omit<TaskRecord, 'id' | 'createdAt'>) => TaskRecord;
   getFilteredRecords: () => TaskRecord[];
   getFavoriteRecords: () => TaskRecord[];
 }
@@ -61,6 +61,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       }).replace(/\//g, '-'),
     };
     set((state) => ({ records: [newRecord, ...state.records] }));
+    return newRecord;
   },
   getFilteredRecords: () => {
     const { records, filterTool, filterRating, showFavoritesOnly } = get();

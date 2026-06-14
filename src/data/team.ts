@@ -147,6 +147,8 @@ export const workflows: Workflow[] = [
     ],
     isFavorite: true,
     useCount: 56,
+    createdAt: '2024-01-15 10:30:00',
+    updatedAt: '2024-01-20 14:22:00',
   },
   {
     id: '2',
@@ -165,6 +167,8 @@ export const workflows: Workflow[] = [
     ],
     isFavorite: false,
     useCount: 23,
+    createdAt: '2024-01-18 09:15:00',
+    updatedAt: '2024-01-22 16:45:00',
   },
 ];
 

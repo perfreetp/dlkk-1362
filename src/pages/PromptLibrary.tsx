@@ -54,8 +54,13 @@ export function PromptLibrary() {
   const selectedPrompt = prompts.find((p) => p.id === selectedPromptId);
 
   useEffect(() => {
-    if (filteredPrompts.length > 0 && !selectedPrompt && selectedPromptId === null) {
-      setSelectedPromptId(filteredPrompts[0].id);
+    if (filteredPrompts.length > 0) {
+      const currentSelectedInList = filteredPrompts.some((p) => p.id === selectedPromptId);
+      if (!selectedPrompt || !currentSelectedInList) {
+        setSelectedPromptId(filteredPrompts[0].id);
+      }
+    } else if (filteredPrompts.length === 0) {
+      setSelectedPromptId(null);
     }
   }, [filteredPrompts, selectedPrompt, selectedPromptId, setSelectedPromptId]);
 

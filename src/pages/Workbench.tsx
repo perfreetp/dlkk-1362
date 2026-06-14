@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useToolStore } from '@/store/useToolStore';
 import { useTeamStore } from '@/store/useTeamStore';
 import { usePromptStore } from '@/store/usePromptStore';
@@ -30,10 +30,13 @@ import {
   FileText,
   CheckCircle2,
   History,
+  Pause,
+  RefreshCw,
+  FolderPlus,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getIconByName } from '@/utils/iconHelper';
-import type { Workflow, WorkflowExecutionRecord } from '@/types';
+import type { Workflow, WorkflowExecutionRecord, WorkflowNode } from '@/types';
 import { tools as allTools } from '@/data/tools';
 
 export function Workbench() {
@@ -133,13 +136,39 @@ export function Workbench() {
     setShowWorkflowDetail(wf);
   };
 
+  const buildWorkflowFromRecord = (exec: WorkflowExecutionRecord): Workflow => {
+    const nodes: WorkflowNode[] = exec.steps.map((step, idx) => ({
+      id: step.nodeId || `node-${idx}`,
+      type: 'tool' as const,
+      position: { x: idx * 250, y: 0 },
+      data: {
+        label: step.toolName,
+        toolId: step.toolId,
+        promptId: step.promptId,
+        promptTitle: step.promptTitle,
+        dependsOn: [],
+      },
+    }));
+
+    return {
+      id: exec.workflowId,
+      name: exec.workflowName || '已删除工作流',
+      description: '原工作流已删除，此为基于执行记录的快照',
+      nodes,
+      edges: [],
+      isFavorite: false,
+      createdAt: exec.startedAt || '',
+      updatedAt: exec.completedAt || '',
+      useCount: 0,
+    };
+  };
+
   const handleViewExecution = (exec: WorkflowExecutionRecord) => {
     const wf = workflows.find((w) => w.id === exec.workflowId);
-    if (wf) {
-      setExecutingWorkflow(wf);
-      setViewingExecution(exec);
-      setShowWorkflowExecutor(true);
-    }
+    const workflowToUse = wf || buildWorkflowFromRecord(exec);
+    setExecutingWorkflow(workflowToUse);
+    setViewingExecution(exec);
+    setShowWorkflowExecutor(true);
   };
 
   const getToolById = (toolId: string) => {
@@ -421,60 +450,93 @@ export function Workbench() {
                       const isCompleted = exec.status === 'completed';
                       const isRunning = exec.status === 'running';
                       const isError = exec.status === 'error';
+                      const isPaused = exec.status === 'paused';
+                      const isOrphan = exec.isOrphan || !wf;
+
+                      const statusBadge = (status: string) => {
+                        const styles: Record<string, string> = {
+                          pending: 'bg-bg-tertiary/80 text-text-tertiary border-border-secondary',
+                          running: 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30',
+                          paused: 'bg-accent-warning/20 text-accent-warning border border-accent-warning/30',
+                          completed: 'bg-accent-secondary/20 text-accent-secondary border border-accent-secondary/30',
+                          error: 'bg-accent-danger/20 text-accent-danger border border-accent-danger/30',
+                        };
+                        const labels: Record<string, string> = {
+                          pending: '待执行',
+                          running: '执行中',
+                          paused: '已暂停',
+                          completed: '成功',
+                          error: '失败',
+                        };
+                        return (
+                          <span className={`px-1.5 py-0.5 text-[10px] rounded-md ${styles[status] || ''}`}>
+                            {labels[status] || status}
+                          </span>
+                        );
+                      };
+
+                      const statusIcon = (status: string) => {
+                        switch (status) {
+                          case 'completed':
+                            return <CheckCircle2 className="w-4 h-4 text-accent-secondary" />;
+                          case 'running':
+                            return <Sparkles className="w-4 h-4 text-accent-primary animate-pulse" />;
+                          case 'error':
+                            return <AlertTriangle className="w-4 h-4 text-accent-danger" />;
+                          case 'paused':
+                            return <Pause className="w-4 h-4 text-accent-warning" />;
+                          default:
+                            return <Clock className="w-4 h-4 text-text-tertiary" />;
+                        }
+                      };
+
+                      const statusBg = (status: string) => {
+                        switch (status) {
+                          case 'completed':
+                            return 'bg-accent-secondary/20';
+                          case 'running':
+                            return 'bg-accent-primary/20';
+                          case 'error':
+                            return 'bg-accent-danger/20';
+                          case 'paused':
+                            return 'bg-accent-warning/20';
+                          default:
+                            return 'bg-bg-tertiary/50';
+                        }
+                      };
+
                       return (
                         <div
                           key={exec.id}
                           onClick={() => handleViewExecution(exec)}
-                          className="p-3 rounded-xl bg-bg-tertiary/30 border border-border-secondary hover:border-accent-primary/30 hover:bg-bg-tertiary/50 cursor-pointer transition-all animate-fadeInUp flex items-center gap-3"
+                          className={`p-3 rounded-xl border hover:border-accent-primary/30 hover:bg-bg-tertiary/50 cursor-pointer transition-all animate-fadeInUp flex items-center gap-3 ${
+                            isOrphan
+                              ? 'bg-accent-warning/5 border-accent-warning/20'
+                              : 'bg-bg-tertiary/30 border-border-secondary'
+                          }`}
                           style={{ animationDelay: `${idx * 0.05}s` }}
                         >
                           <div
-                            className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                              isCompleted
-                                ? 'bg-accent-secondary/20'
-                                : isRunning
-                                ? 'bg-accent-primary/20'
-                                : isError
-                                ? 'bg-accent-danger/20'
-                                : 'bg-bg-tertiary/50'
-                            }`}
+                            className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${statusBg(
+                              exec.status
+                            )}`}
                           >
-                            {isCompleted ? (
-                              <CheckCircle2 className="w-4 h-4 text-accent-secondary" />
-                            ) : isRunning ? (
-                              <Sparkles className="w-4 h-4 text-accent-primary animate-pulse" />
-                            ) : isError ? (
-                              <AlertTriangle className="w-4 h-4 text-accent-danger" />
-                            ) : (
-                              <Clock className="w-4 h-4 text-text-tertiary" />
-                            )}
+                            {statusIcon(exec.status)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <p className="text-sm font-medium text-text-primary truncate">
                                 {exec.workflowName || wf?.name || '已删除工作流'}
                               </p>
-                              <span
-                                className={`px-1.5 py-0.5 text-[10px] rounded-md ${
-                                  isCompleted
-                                    ? 'bg-accent-secondary/20 text-accent-secondary border border-accent-secondary/30'
-                                    : isRunning
-                                    ? 'bg-accent-primary/20 text-accent-primary border border-accent-primary/30'
-                                    : isError
-                                    ? 'bg-accent-danger/20 text-accent-danger border border-accent-danger/30'
-                                    : 'bg-bg-tertiary/80 text-text-tertiary border border-border-secondary'
-                                }`}
-                              >
-                                {isCompleted
-                                  ? '成功'
-                                  : isRunning
-                                  ? '执行中'
-                                  : isError
-                                  ? '失败'
-                                  : '待执行'}
-                              </span>
+                              {isOrphan && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] rounded-md bg-accent-warning/20 text-accent-warning border border-accent-warning/30">
+                                  <AlertTriangle className="w-2.5 h-2.5" />
+                                  已归档
+                                </span>
+                              )}
+                              {statusBadge(exec.status)}
                             </div>
-                            <div className="flex items-center gap-3 mt-0.5 text-[11px] text-text-tertiary">
+                            <div className="flex items-center gap-3 mt-0.5 text-[11px] text-text-tertiary flex-wrap">
                               <span>{exec.createdAt}</span>
                               <span className="flex items-center gap-1">
                                 <Layers className="w-2.5 h-2.5" />
@@ -486,9 +548,35 @@ export function Workbench() {
                                   {(exec.totalDuration / 1000).toFixed(1)}s
                                 </span>
                               )}
+                              {Object.keys(exec.stepVariableValues || {}).length > 0 && (
+                                <span className="flex items-center gap-1 text-accent-primary">
+                                  <FileText className="w-2.5 h-2.5" />
+                                  含变量
+                                </span>
+                              )}
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-text-tertiary flex-shrink-0" />
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {!isOrphan && isCompleted && (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewExecution(exec);
+                                  }}
+                                  className="w-7 h-7 rounded-lg bg-bg-tertiary/50 text-text-secondary hover:text-accent-primary hover:bg-accent-primary/10 transition-all flex items-center justify-center"
+                                  title="查看详情"
+                                >
+                                  <ChevronRight className="w-3.5 h-3.5" />
+                                </button>
+                              </>
+                            )}
+                            {isOrphan && (
+                              <span className="text-[10px] text-accent-warning px-1.5">
+                                已归档
+                              </span>
+                            )}
+                          </div>
                         </div>
                       );
                     })
@@ -963,7 +1051,8 @@ export function Workbench() {
               <p className="text-sm text-text-tertiary mb-6 leading-relaxed">
                 确定要删除「{showDeleteConfirm.name}」吗？
                 <br />
-                工作流本身和其执行历史都会被清除，此操作不可撤销。
+                工作流将被移除，但其所有执行历史会被保留并标记为「已归档」，
+                仍可查看记录内容但无法再次执行，此操作不可撤销。
               </p>
               <div className="flex items-center justify-center gap-3">
                 <button
