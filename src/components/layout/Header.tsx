@@ -1,14 +1,16 @@
 import { Search, Bell, Settings, Plus } from 'lucide-react';
 import { useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
 
 interface HeaderProps {
   title: string;
   subtitle?: string;
   actionLabel?: string;
+  actionIcon?: LucideIcon;
   onAction?: () => void;
 }
 
-export function Header({ title, subtitle, actionLabel, onAction }: HeaderProps) {
+export function Header({ title, subtitle, actionLabel, actionIcon: ActionIcon, onAction }: HeaderProps) {
   const [searchFocused, setSearchFocused] = useState(false);
 
   return (
@@ -52,7 +54,7 @@ export function Header({ title, subtitle, actionLabel, onAction }: HeaderProps) 
             onClick={onAction}
             className="h-9 px-4 rounded-xl bg-gradient-to-r from-accent-primary to-accent-secondary text-white text-sm font-medium flex items-center gap-2 hover:shadow-glow hover:scale-[1.02] transition-all glow-btn"
           >
-            <Plus className="w-4 h-4" />
+            {ActionIcon ? <ActionIcon className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
             {actionLabel}
           </button>
         )}

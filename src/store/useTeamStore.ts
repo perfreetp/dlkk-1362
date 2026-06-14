@@ -14,6 +14,9 @@ interface TeamState {
   rejectRequest: (id: string) => void;
   addToolRequest: (name: string, reason: string, applicantId: string, applicantName: string) => void;
   toggleWorkflowFavorite: (id: string) => void;
+  addWorkflow: (workflow: Omit<Workflow, 'id' | 'useCount' | 'isFavorite'>) => void;
+  updateWorkflow: (id: string, data: Partial<Workflow>) => void;
+  deleteWorkflow: (id: string) => void;
 }
 
 export const useTeamStore = create<TeamState>((set) => ({
@@ -53,5 +56,24 @@ export const useTeamStore = create<TeamState>((set) => ({
       workflows: state.workflows.map((w) =>
         w.id === id ? { ...w, isFavorite: !w.isFavorite } : w
       ),
+    })),
+  addWorkflow: (workflow) => {
+    const newWorkflow: Workflow = {
+      ...workflow,
+      id: Date.now().toString(),
+      useCount: 0,
+      isFavorite: false,
+    };
+    set((state) => ({ workflows: [...state.workflows, newWorkflow] }));
+  },
+  updateWorkflow: (id, data) =>
+    set((state) => ({
+      workflows: state.workflows.map((w) =>
+        w.id === id ? { ...w, ...data } : w
+      ),
+    })),
+  deleteWorkflow: (id) =>
+    set((state) => ({
+      workflows: state.workflows.filter((w) => w.id !== id),
     })),
 }));

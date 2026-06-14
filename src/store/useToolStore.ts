@@ -7,9 +7,11 @@ interface ToolState {
   selectedCategory: string;
   selectedRole: string;
   searchQuery: string;
+  selectedToolId: string | null;
   setSelectedCategory: (category: string) => void;
   setSelectedRole: (role: string) => void;
   setSearchQuery: (query: string) => void;
+  setSelectedTool: (id: string | null) => void;
   toggleFavorite: (id: string) => void;
   toggleTeamRecommend: (id: string) => void;
   getFilteredTools: () => Tool[];
@@ -21,9 +23,11 @@ export const useToolStore = create<ToolState>((set, get) => ({
   selectedCategory: 'all',
   selectedRole: 'all',
   searchQuery: '',
+  selectedToolId: null,
   setSelectedCategory: (category) => set({ selectedCategory: category }),
   setSelectedRole: (role) => set({ selectedRole: role }),
   setSearchQuery: (query) => set({ searchQuery: query }),
+  setSelectedTool: (id) => set({ selectedToolId: id }),
   toggleFavorite: (id) =>
     set((state) => ({
       tools: state.tools.map((t) =>

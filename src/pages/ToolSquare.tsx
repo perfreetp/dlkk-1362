@@ -58,7 +58,7 @@ export function ToolSquare() {
             <div className="glass-card p-4">
               <h3 className="text-sm font-medium text-text-primary mb-3">适合岗位</h3>
               <div className="space-y-1">
-                {roles.slice(0, 6).map((role) => (
+                {roles.map((role) => (
                   <button
                     key={role.id}
                     onClick={() => setSelectedRole(role.id)}
