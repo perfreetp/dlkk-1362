@@ -1,0 +1,180 @@
+import { TeamMember, ToolRequest, FlowSuggestion, Workflow } from '@/types';
+
+export const teamMembers: TeamMember[] = [
+  {
+    id: '1',
+    name: '张三',
+    avatar: '👨‍💼',
+    role: 'admin',
+    position: '内容总监',
+    joinDate: '2024-03-15',
+    taskCount: 234,
+  },
+  {
+    id: '2',
+    name: '李四',
+    avatar: '👩‍🎨',
+    role: 'member',
+    position: '视觉设计师',
+    joinDate: '2024-06-20',
+    taskCount: 189,
+  },
+  {
+    id: '3',
+    name: '王五',
+    avatar: '👨‍💻',
+    role: 'member',
+    position: '内容运营',
+    joinDate: '2025-01-10',
+    taskCount: 312,
+  },
+  {
+    id: '4',
+    name: '赵六',
+    avatar: '👩‍💼',
+    role: 'member',
+    position: '文案策划',
+    joinDate: '2025-08-01',
+    taskCount: 156,
+  },
+  {
+    id: '5',
+    name: '钱七',
+    avatar: '👨‍🔬',
+    role: 'member',
+    position: '研究员',
+    joinDate: '2026-02-14',
+    taskCount: 78,
+  },
+];
+
+export const toolRequests: ToolRequest[] = [
+  {
+    id: '1',
+    name: 'Suno AI 音乐生成',
+    reason: '需要为短视频项目生成背景音乐，现有工具无法满足需求',
+    applicantId: '2',
+    applicantName: '李四',
+    status: 'pending',
+    createdAt: '2026-06-10',
+  },
+  {
+    id: '2',
+    name: 'Runway 视频生成',
+    reason: '营销活动需要AI视频素材，提升内容制作效率',
+    applicantId: '3',
+    applicantName: '王五',
+    status: 'pending',
+    createdAt: '2026-06-08',
+  },
+  {
+    id: '3',
+    name: 'Notion AI 写作',
+    reason: '团队已使用Notion作为知识库，希望增加AI写作能力',
+    applicantId: '1',
+    applicantName: '张三',
+    status: 'approved',
+    createdAt: '2026-05-20',
+  },
+  {
+    id: '4',
+    name: ' Grammarly 语法检查',
+    reason: '英文内容较多，需要专业的语法检查工具提升质量',
+    applicantId: '4',
+    applicantName: '赵六',
+    status: 'rejected',
+    createdAt: '2026-05-15',
+  },
+];
+
+export const flowSuggestions: FlowSuggestion[] = [
+  {
+    id: '1',
+    title: '重复的标题生成流程',
+    description: '发现团队成员每周平均使用「标题生成器」8次，且多为相似场景',
+    type: 'duplicate',
+    priority: 'high',
+    relatedTools: ['标题生成器', 'GPT-4 写作助手'],
+    suggestion: '建议创建一个「周更内容标题包」工作流，将选题+标题生成整合，可节省约 30% 的重复操作时间。',
+  },
+  {
+    id: '2',
+    title: '翻译流程效率偏低',
+    description: '翻译任务平均需要 2.3 个工具切换，耗时长且容易出错',
+    type: 'inefficient',
+    priority: 'medium',
+    relatedTools: ['DeepL 翻译', 'GPT 翻译优化', 'Claude 长文处理'],
+    suggestion: '建议搭建「多语种翻译」工作流，自动完成初翻→润色→校对的全流程，预计效率提升 45%。',
+  },
+  {
+    id: '3',
+    title: '设计需求沟通成本高',
+    description: '设计任务中需求反复修改占比达 40%，主要原因是需求描述不清晰',
+    type: 'optimization',
+    priority: 'medium',
+    relatedTools: ['设计需求描述', 'Midjourney 绘图'],
+    suggestion: '建议在设计流程中增加「AI生成参考图」环节，用视觉化参考减少沟通偏差，可降低返工率约 35%。',
+  },
+  {
+    id: '4',
+    title: '未充分利用团队模板',
+    description: '团队共享的 5 个高质量提示词模板，月均使用率不足 20%',
+    type: 'optimization',
+    priority: 'low',
+    relatedTools: ['GPT-4 写作助手', 'Claude 长文处理'],
+    suggestion: '建议将团队推荐模板置顶显示，并在新建任务时智能推荐匹配的模板，可提升模板使用率和内容质量。',
+  },
+];
+
+export const workflows: Workflow[] = [
+  {
+    id: '1',
+    name: '内容创作全流程',
+    description: '从选题到成稿的一站式内容创作流程',
+    nodes: [
+      { id: 'n1', type: 'input', position: { x: 100, y: 100 }, data: { label: '内容主题输入' } },
+      { id: 'n2', type: 'tool', position: { x: 350, y: 50 }, data: { label: '标题生成', toolId: '9' } },
+      { id: 'n3', type: 'tool', position: { x: 350, y: 150 }, data: { label: '大纲生成', toolId: '1' } },
+      { id: 'n4', type: 'tool', position: { x: 600, y: 100 }, data: { label: '正文撰写', toolId: '1' } },
+      { id: 'n5', type: 'output', position: { x: 850, y: 100 }, data: { label: '成品输出' } },
+    ],
+    edges: [
+      { id: 'e1', source: 'n1', target: 'n2' },
+      { id: 'e2', source: 'n1', target: 'n3' },
+      { id: 'e3', source: 'n2', target: 'n4' },
+      { id: 'e4', source: 'n3', target: 'n4' },
+      { id: 'e5', source: 'n4', target: 'n5' },
+    ],
+    isFavorite: true,
+    useCount: 56,
+  },
+  {
+    id: '2',
+    name: '多语言翻译',
+    description: '一键翻译为多种语言并自动润色',
+    nodes: [
+      { id: 'n1', type: 'input', position: { x: 100, y: 100 }, data: { label: '原文输入' } },
+      { id: 'n2', type: 'tool', position: { x: 350, y: 100 }, data: { label: 'DeepL 翻译', toolId: '5' } },
+      { id: 'n3', type: 'tool', position: { x: 600, y: 100 }, data: { label: 'AI 润色', toolId: '6' } },
+      { id: 'n4', type: 'output', position: { x: 850, y: 100 }, data: { label: '多语言输出' } },
+    ],
+    edges: [
+      { id: 'e1', source: 'n1', target: 'n2' },
+      { id: 'e2', source: 'n2', target: 'n3' },
+      { id: 'e3', source: 'n3', target: 'n4' },
+    ],
+    isFavorite: false,
+    useCount: 23,
+  },
+];
+
+export const teamStats = {
+  totalTools: 12,
+  totalPrompts: 8,
+  totalTasks: 969,
+  totalMembers: 5,
+  monthlySaving: '120小时',
+  efficiencyGain: 45,
+  favoriteTools: 5,
+  teamRecommended: 6,
+};
